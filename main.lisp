@@ -105,4 +105,4 @@
 (defun main ()
   (observe-revival)
   (run-shell-commands-in-string "echo")
-  (run-shell-commands-in-string "FOO=123"))
+  (shcl.lexer::tokenize "FOO=123"))
