@@ -104,12 +104,5 @@
 
 (defun main ()
   (observe-revival)
-  (with-options ((uiop:raw-command-line-arguments))
-    (when *help*
-      (cl-cli:help *options* nil :prog-name "shcl")
-      (return-from main))
-
-    (when *enable-lisp-splice*
-      (enable-shell-splice-syntax))
-
-    (run-shell-commands-in-stream *standard-input* :prompt-stream *standard-output*)))
+  (run-shell-commands-in-string "echo")
+  (run-shell-commands-in-string "FOO=123"))
