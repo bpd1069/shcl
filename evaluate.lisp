@@ -3,7 +3,7 @@
 (optimization-settings)
 
 (defparameter *umask*
-  (logior s-irusr s-iwusr s-irgrp s-iroth)
+  0
   "The umask that should be used when creating new files.")
 
 (define-condition not-implemented (warning error)
@@ -144,10 +144,8 @@ do nothing exept spawn a new process."
   "This is a wrapper around the posix open function which
 atomically adds the new fd to the fd table and gives it a +1 retain
 count."
-  (with-lock-held (%fd-retain-count-table-lock%)
-    (let ((fd (posix-open pathname flags mode)))
-      (debug-log 'status "OPEN ~A = ~A" fd pathname)
-      (%manage-new-fd fd))))
+  (declare (ignore pathname flags mode))
+  0)
 
 (defun pipe-retained ()
   "This is a wrapper around the posix pipe function which atomically
@@ -180,16 +178,16 @@ file descriptors."
 for the given redirect."))
 (defmethod open-args-for-redirect ((r less))
   (declare (ignore r))
-  (logior o-rdonly))
+  0)
 (defmethod open-args-for-redirect ((r great))
   (declare (ignore r))
-  (logior o-wronly o-creat o-trunc))
+  0)
 (defmethod open-args-for-redirect ((r dgreat))
   (declare (ignore r))
-  (logior o-wronly o-creat o-append))
+  0)
 (defmethod open-args-for-redirect ((r lessgreat))
   (declare (ignore r))
-  (logior o-rdwr o-creat))
+  0)
 
 (defgeneric fd-from-description (description)
   (:documentation
@@ -265,7 +263,7 @@ See `bind-fd'."
       (return-from get-fd binding)))
   (when (fd-managed-p fd)
     (error 'invalid-fd :fd fd))
-  (handler-case (fcntl fd f-getfd)
+  (handler-case (fcntl fd 0)
     (syscall-error ()
       (error 'invalid-fd :fd fd)))
   fd)
@@ -706,7 +704,7 @@ and io redirects."
                              :managed-fds fds
                              :environment (linearized-exported-environment)))
               (debug-log 'status "PID ~A = ~A" pid arguments))
-            (setf status (nth-value 1 (waitpid pid wuntraced)))
+            (setf status (nth-value 1 (waitpid pid 0)))
             (debug-log 'status "EXITED ~A" pid)
             (when (wifstopped status)
               (warn "Stopped jobs should get a job number, but they don't"))

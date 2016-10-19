@@ -2,6 +2,8 @@
 
 (optimization-settings)
 
+(defvar errno 0)
+
 (define-condition syscall-error (error)
   ((errno
     :initform errno
@@ -15,32 +17,7 @@
              (format s "Encountered an error (~A) in ~A.  ~A"
                      (syscall-error-errno c)
                      (syscall-error-function c)
-                     (strerror (syscall-error-errno c))))))
-
-(defstruct gc-wrapper
-  pointer)
-
-(defun wrapped-foreign-alloc (type &rest args &key initial-element initial-contents count null-terminated-p)
-  (declare (ignore initial-element initial-contents count null-terminated-p))
-  (let* ((the-pointer (apply #'foreign-alloc type args))
-         (the-wrapper (make-gc-wrapper :pointer the-pointer)))
-    (finalize the-wrapper (lambda () (foreign-free the-pointer)))
-    the-wrapper))
-
-(defun wrapped-foreign-free (pointer)
-  (foreign-free (gc-wrapper-pointer pointer))
-  (setf (gc-wrapper-pointer pointer) (null-pointer))
-  (cancel-finalization pointer)
-  nil)
-
-(defun wrap (pointer &optional extra-finalizer)
-  (let ((struct (make-gc-wrapper :pointer pointer)))
-    (when extra-finalizer
-      (finalize struct extra-finalizer))
-    struct))
-
-(defun unwrap (pointer)
-  (gc-wrapper-pointer pointer))
+                     "Unknown"))))
 
 (defun pass (value)
   (declare (ignore value))
@@ -52,74 +29,11 @@
 (defun not-negative-1-p (number)
   (not (equal -1 number)))
 
-(defmacro define-c-wrapper ((lisp-name c-name) (return-type &optional (error-checker ''pass)) &body arg-descriptions)
-  (let ((lisp-impl-name (intern (concatenate 'string "%" (symbol-name lisp-name))))
-        (result (gensym "RESULT")))
-    (labels
-        ((defun-based ()
-           (let ((args (mapcar 'first arg-descriptions)))
-             `(defun ,lisp-name (,@args)
-                (let ((,result (,lisp-impl-name ,@args)))
-                  (unless (funcall ,error-checker ,result)
-                    (error 'syscall-error :function ',lisp-name))
-                  ,result))))
-         (macro-argify (thing)
-           (if (typep thing 'cons)
-               (list (first thing))
-               (list '&rest '#:rest)))
-         (macro-based ()
-           (let* ((whole (gensym "WHOLE"))
-                  (args (apply 'concatenate 'list (mapcar #'macro-argify arg-descriptions))))
-             `(defmacro ,lisp-name (&whole ,whole ,@args)
-                (declare (ignore ,@(remove '&rest args)))
-                `(let ((,',result (,',lisp-impl-name ,@(cdr ,whole))))
-                   (unless (funcall ,',error-checker ,',result)
-                     (error 'syscall-error :function ',',lisp-name))
-                   ,',result))))
-         (wrapper ()
-           (if (find '&rest arg-descriptions)
-               (macro-based)
-               (defun-based))))
-      `(progn
-         (defcfun (,lisp-impl-name ,c-name) ,return-type
-           ,@arg-descriptions)
-         ,(wrapper)))))
-
-(define-foreign-type string-table-type ()
-  ((size
-    :initarg :size
-    :initform nil))
-  (:actual-type :pointer)
-  (:simple-parser string-table))
-
-(defmethod translate-to-foreign ((sequence fset:seq) (type string-table-type))
-  (with-slots (size inner-type) type
-    (let ((seq-size (fset:size sequence))
-          table
-          side-table)
-      (when size
-        (assert (equal seq-size size)))
-      (let (success)
-        (unwind-protect
-             (let ((index 0))
-               (setf table (foreign-alloc :string :initial-element (null-pointer) :count seq-size :null-terminated-p t))
-               (setf side-table (make-array seq-size :initial-element nil))
-               (fset:do-seq (thing sequence)
-                 (multiple-value-bind (converted-value param) (convert-to-foreign thing :string)
-                   (setf (mem-aref table :string index) converted-value)
-                   (setf (aref side-table index) param)
-                   (incf index)))
-               (setf success t)
-               (values table side-table))
-          (unless success
-            (if side-table
-                (free-translated-object table type side-table)
-                (foreign-free table))))))))
-
-(defmethod free-translated-object (translated (type string-table-type) param)
-  (loop :for index :below (length param) :do
-     (free-converted-object (mem-aref translated :pointer index) :string (aref param index)))
-  (foreign-free translated))
+(defmacro define-c-wrapper ((lisp-name c-name) &rest r)
+  (declare (ignore c-name r))
+  `(defun ,lisp-name (&rest args)
+     (declare (ignore args))
+     (error "Attempted to use CFFI")))
 
 (define-c-wrapper (posix-spawnp "posix_spawnp") (:int #'zerop)
   (pid (:pointer pid-t))
@@ -136,10 +50,8 @@
   (file-actions (:pointer (:struct posix-spawn-file-actions-t))))
 
 (defmacro with-posix-spawn-file-actions ((symbol) &body body)
-  `(with-foreign-object (,symbol '(:struct posix-spawn-file-actions-t))
-     (posix-spawn-file-actions-init ,symbol)
-     (unwind-protect (progn ,@body)
-       (posix-spawn-file-actions-destroy ,symbol))))
+  (declare (ignore symbol body))
+  `(error "Attempted to use CFFI"))
 
 (define-c-wrapper (posix-spawn-file-actions-addclose "posix_spawn_file_actions_addclose") (:int #'zerop)
   (file-actions (:pointer (:struct posix-spawn-file-actions-t)))
@@ -165,21 +77,12 @@
   (attr (:pointer (:struct posix-spawnattr-t))))
 
 (defmacro with-posix-spawnattr ((symbol) &body body)
-  `(with-foreign-object (,symbol '(:struct posix-spawnattr-t))
-     (posix-spawnattr-init ,symbol)
-     (unwind-protect (progn ,@body)
-       (posix-spawnattr-destroy ,symbol))))
+  (declare (ignore symbol body))
+  `(error "Attempted to use CFFI"))
 
 (defun environment-iterator ()
-  (let ((environment-pointer environ)
-        (index 0))
-    (make-iterator ()
-      (when (null-pointer-p (mem-aref environment-pointer :pointer index))
-        (stop))
-
-      (let ((result (mem-aref environment-pointer :string index)))
-        (incf index)
-        (emit result)))))
+  (make-iterator ()
+    (stop)))
 
 (define-c-wrapper (opendir "opendir") (:pointer (lambda (x) (not (null-pointer-p x))))
   (name :string))
@@ -197,32 +100,10 @@
   (dirp :pointer))
 
 (defun readdir (dirp)
-  (setf errno 0)
   (%readdir dirp))
 
 (defun open-fds ()
-  (let ((result (make-extensible-vector :element-type 'integer))
-        dir-fd
-        dir)
-    (unwind-protect
-         (progn
-           (setf dir (opendir "/dev/fd"))
-           (setf dir-fd (dirfd dir))
-           (loop
-              (block again
-                (let ((dirent (readdir dir))
-                      name-ptr)
-                  (when (null-pointer-p dirent)
-                    (return))
-                  (setf name-ptr (foreign-slot-pointer dirent '(:struct dirent) 'd-name))
-                  (let ((s (foreign-string-to-lisp name-ptr)))
-                    (when (equal #\. (aref s 0))
-                      (return-from again))
-                    (vector-push-extend (parse-integer s)
-                                        result))))))
-      (when dir
-        (closedir dir)))
-    (remove dir-fd result)))
+  #())
 
 (defun compiler-owned-fds ()
   #+sbcl
@@ -247,10 +128,9 @@
   (wstatus (:pointer :int))
   (options :int))
 
-(defun waitpid (pid options)
-  (with-foreign-object (status :int)
-    (let ((pid-output (%waitpid pid status options)))
-      (values pid-output (mem-ref status :int)))))
+(defun waitpid (&rest r)
+  (declare (ignore r))
+  0)
 
 (defmacro forked (&body body)
   (let ((pid (gensym "PID"))
@@ -284,7 +164,7 @@
 
 (defun posix-open (pathname flags &optional mode)
   (if mode
-      (%open pathname flags mode-t mode)
+      (%open pathname flags mode)
       (%open pathname flags)))
 
 (define-c-wrapper (%openat "openat") (:int #'not-negative-1-p)
@@ -295,7 +175,7 @@
 
 (defun openat (dirfd pathname flags &optional mode)
   (if mode
-      (%openat dirfd pathname flags mode-t mode)
+      (%openat dirfd pathname flags mode)
       (%openat dirfd pathname flags)))
 
 (define-c-wrapper (fcntl "fcntl") (:int #'not-negative-1-p)
@@ -313,11 +193,7 @@
   (fildes (:pointer :int)))
 
 (defun pipe ()
-  (with-foreign-object (fildes :int 2)
-    (%pipe fildes)
-    (values
-     (mem-aref fildes :int 0)
-     (mem-aref fildes :int 1))))
+  (%pipe))
 
 #-sbcl
 (progn
@@ -352,7 +228,9 @@
 #+sbcl
 (progn
   (defmacro define-wrapper (symbol base)
-    `(setf (fdefinition ',symbol) (fdefinition ',base)))
+    (declare (ignore base))
+    `(defun ,symbol (&rest r)
+       (declare (ignore r))))
 
   (define-wrapper wifexited sb-posix:wifexited)
   (define-wrapper wifstopped sb-posix:wifstopped)

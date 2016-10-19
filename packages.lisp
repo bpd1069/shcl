@@ -81,15 +81,8 @@
    #:separator-op #:separator #:command-separator #:sequential-sep
    #:wordly-word #:redirect #:fd-description))
 
-(defpackage :shcl.posix-types
-  (:export
-   #:size-t #:ssize-t #:pid-t #:posix-spawn-file-actions-t
-   #:posix-spawnattr-t #:dirent #:d-name #:errno #:mode-t #:environ
-   #:s-irusr #:s-iwusr #:s-irgrp #:s-iroth #:o-rdonly #:o-wronly
-   #:o-rdwr #:o-creat #:o-trunc #:o-append #:f-getfd #:wuntraced))
-
 (defpackage :shcl.posix
-  (:use :common-lisp :cffi :trivial-garbage :shcl.posix-types :shcl.utility
+  (:use :common-lisp :trivial-garbage :shcl.utility
         :bordeaux-threads)
   (:export
    #:posix-spawn-file-actions-init #:posix-spawn-file-actions-destroy
@@ -102,8 +95,8 @@
    #:wifexited #:wifstopped #:wifsignaled #:wexitstatus #:wtermsig #:wstopsig))
 
 (defpackage :shcl.fork-exec
-  (:use :common-lisp :alexandria :cffi :shcl.utility :shcl.shell-grammar
-        :shcl.posix-types :shcl.posix)
+  (:use :common-lisp :alexandria :shcl.utility :shcl.shell-grammar
+        :shcl.posix)
   (:shadowing-import-from :alexandria #:when-let #:when-let*)
   (:import-from :cl-fad #:list-directory #:directory-pathname-p #:pathname-as-file)
   (:export #:run))
@@ -130,7 +123,7 @@
   (:use :common-lisp :trivial-garbage :alexandria :bordeaux-threads
         :shcl.utility :shcl.shell-grammar :shcl.lexer :shcl.fork-exec
         :shcl.thread :shcl.expand :shcl.environment :shcl.builtin
-        :shcl.posix :shcl.posix-types)
+        :shcl.posix)
   (:shadowing-import-from :alexandria #:when-let #:when-let*)
   (:shadowing-import-from :shcl.posix #:pipe)
   (:export #:evaluate))
