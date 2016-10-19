@@ -19,15 +19,3 @@
                (:file "evaluate" :depends-on ("packages" "utility" "parser" "lexer" "fork-exec" "thread" "environment" "builtin" "posix"))
                (:file "lisp-interpolation" :depends-on ("packages" "utility" "lexer" "shell-grammar" "evaluate" "expand" "baking"))
                (:file "main" :depends-on ("packages" "evaluate" "shell-grammar" "lexer" "baking" "lisp-interpolation" "utility"))))
-
-(defsystem "shcl-test"
-  :description "Shcl tests, tests for a lisp shell"
-  :version "0.0.1"
-  :author "Brad Jensen <brad@bradjensen.net>"
-  :licence "All rights reserved."
-  :depends-on ("prove")
-  :components ((:file "test/lexer")
-               (:file "test/utility")
-               (:file "test/environment")
-               (:file "test/posix")
-               (:file "test/main")))
