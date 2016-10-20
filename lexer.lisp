@@ -16,9 +16,7 @@
   ())
 
 (defclass simple-word (a-word)
-  ((text
-    :initarg :text
-    :accessor simple-word-text)))
+  ())
 
 (defclass assignment-word (a-word)
   ((name
