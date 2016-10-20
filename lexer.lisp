@@ -2,13 +2,6 @@
 
 (shcl.utility::optimization-settings)
 
-(defmacro define-make-load-form-for-class (class-name)
-  (let ((object (gensym "OBJECT"))
-        (environment (gensym "ENVIRONMENT")))
-    `(defmethod make-load-form ((,object ,class-name) &optional ,environment)
-       (declare (ignore ,object ,environment))
-       `(error "make-load-form called"))))
-
 (defclass token ()
   ((value))) ;; Can't remove this slot
 
@@ -23,7 +16,7 @@
     :type a-word ;; Can't remove this
     :initarg :value-word
     )))
-(define-make-load-form-for-class assignment-word) ;; Can't remove this
 
-(defclass name (simple-word)
-  ())
+(defmethod make-load-form ((object assignment-word) &optional environment)
+  (declare (ignore environment))
+  (error "make-load-form called"))
