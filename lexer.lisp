@@ -22,15 +22,11 @@
 
 (defclass assignment-word (a-word)
   ((name
-    :type name
-    :initform (error "required")
-    :accessor assignment-word-name
     :initarg :name)
    (value-word
-    :type a-word
+    :type a-word ;; Can't remove this
     :initarg :value-word
-    :initform (error "required")
-    :accessor assignment-word-value-word)))
+    )))
 (define-make-load-form-for-class assignment-word) ;; Can't remove this
 
 (defclass name (simple-word)
