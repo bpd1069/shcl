@@ -14,11 +14,9 @@
           :initform nil
           :accessor token-value
           :initarg :value)))
-(define-make-load-form-for-class token)
 
 (defclass a-word (token)
   ())
-(define-make-load-form-for-class a-word)
 
 (defclass simple-word (a-word)
   ((text
@@ -26,7 +24,6 @@
     :accessor simple-word-text
     :initform (error "required")
     :type string)))
-(define-make-load-form-for-class simple-word)
 
 (defclass assignment-word (a-word)
   ((name
@@ -39,8 +36,7 @@
     :initarg :value-word
     :initform (error "required")
     :accessor assignment-word-value-word)))
-(define-make-load-form-for-class assignment-word)
+(define-make-load-form-for-class assignment-word) ;; Can't remove this
 
 (defclass name (simple-word)
   ())
-(define-make-load-form-for-class name)
