@@ -72,61 +72,10 @@ are not.")
            (format *debug-stream* ,message ,@format-args)
            (fresh-line *debug-stream*))))))
 
-(defstruct hook
-  (functions (fset:empty-set)))
-
-(defmacro define-hook (name &optional documentation)
-  "Create a hook.
-
-A hook is more or less an unordered collection of functions.  When the
-hook is run with `run-hook', each function will be called once."
-  `(defparameter ,name
-     (make-hook)
-     ,documentation))
-
-(defun add-hook (hook function-symbol)
-  "Add a function a function to a hook."
-  (check-type hook hook)
-  (check-type function-symbol symbol)
-  (setf (hook-functions hook) (fset:with (hook-functions hook) function-symbol))
-  hook)
-
-(defun remove-hook (hook function-symbol)
-  "Remove a function from a hook."
-  (check-type hook hook)
-  (check-type function-symbol symbol)
-  (setf (hook-functions hook) (fset:less (hook-functions hook) function-symbol))
-  hook)
-
-(defun run-hook (hook)
-  "Run each function in the provided hook."
-  (fset:do-set (fn (hook-functions hook))
-    (funcall fn)))
-
-(define-hook *revival-hook*
-  "This hook is run when the process starts.")
-
-(defmacro on-revival (function-symbol)
-  "When the process starts, call the named function."
-  `(add-hook *revival-hook* ',function-symbol))
-
-(defun observe-revival ()
-  "The process has started!"
-  (run-hook *revival-hook*))
-
-(define-hook *dump-hook*
-  "This hook is run when an executable is being prepared.
-
-Note, it is as of yet undetermined whether this hook will run or not
-for lisp compilers like ECL.")
-
-(defmacro on-dump (function-symbol)
-  "When saving an executable, call the named function."
-  `(add-hook *dump-hook* ',function-symbol))
-
 (defun observe-dump ()
-  "We're saving an executable!"
-  (run-hook *dump-hook*))
+  ;; For some reason, calling this function before dumping is
+  ;; important.
+  )
 
 (defun %when-let (let-sym bindings body)
   (let ((block (gensym (format nil "WHEN-~A-BLOCK" (symbol-name let-sym)))))
@@ -445,15 +394,6 @@ a new iterator in a given family."
         (setf cons (cdr cons))
         (emit value)))))
 
-(defun seq-iterator (seq)
-  "Produce an iterator that traverses an `fset:seq'"
-  (make-iterator ()
-    (when (equal 0 (fset:size seq))
-      (stop))
-    (let ((element (fset:first seq)))
-      (setf seq (fset:less-first seq))
-      (emit element))))
-
 (defgeneric iterator (thing)
   (:documentation
    "Produce an iterator that traverses the given thing."))
@@ -463,6 +403,3 @@ a new iterator in a given family."
 
 (defmethod iterator ((vector vector))
   (vector-iterator vector))
-
-(defmethod iterator ((seq fset:seq))
-  (seq-iterator seq))
