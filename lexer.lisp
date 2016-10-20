@@ -10,10 +10,7 @@
        `(error "make-load-form called"))))
 
 (defclass token ()
-  ((value :type (or null string)
-          :initform nil
-          :accessor token-value
-          :initarg :value)))
+  ((value :initarg :value)))
 
 (defclass a-word (token)
   ())
@@ -21,9 +18,7 @@
 (defclass simple-word (a-word)
   ((text
     :initarg :text
-    :accessor simple-word-text
-    :initform (error "required")
-    :type string)))
+    :accessor simple-word-text)))
 
 (defclass assignment-word (a-word)
   ((name
