@@ -1,6 +1,6 @@
 (in-package :shcl.lexer)
 
-(optimization-settings)
+(shcl.utility::optimization-settings)
 
 (defmacro define-make-load-form-for-class (class-name)
   (let ((object (gensym "OBJECT"))

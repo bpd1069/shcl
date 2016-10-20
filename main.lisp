@@ -1,6 +1,6 @@
 (in-package :shcl)
 
-(optimization-settings)
+(shcl.utility::optimization-settings)
 
 (defgeneric to-string (thing))
 (defmethod to-string ((thing string))
