@@ -3,7 +3,7 @@
   :version "0.0.1"
   :author "Brad Jensen <brad@bradjensen.net>"
   :licence "All rights reserved."
-  :depends-on ("alexandria" "bordeaux-threads" "fset" "cl-unicode" "closer-mop")
+  :depends-on ("alexandria" "bordeaux-threads" "fset" "cl-unicode")
   :components ((:file "packages")
                (:file "utility" :depends-on ("packages"))
                (:file "lexer" :depends-on ("packages" "utility"))

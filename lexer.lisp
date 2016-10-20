@@ -4,12 +4,10 @@
 
 (defmacro define-make-load-form-for-class (class-name)
   (let ((object (gensym "OBJECT"))
-        (environment (gensym "ENVIRONMENT"))
-        (slots (gensym "SLOTS")))
+        (environment (gensym "ENVIRONMENT")))
     `(defmethod make-load-form ((,object ,class-name) &optional ,environment)
-       (assert (eq ',class-name (class-name (class-of ,object))))
-       (let ((,slots (mapcar 'closer-mop:slot-definition-name (closer-mop:class-slots (find-class ',class-name)))))
-         (make-load-form-saving-slots ,object :slot-names ,slots :environment ,environment)))))
+       (declare (ignore ,object ,environment))
+       `(error "make-load-form called"))))
 
 (defclass token ()
   ((value :type (or null string)

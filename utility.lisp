@@ -248,8 +248,7 @@ adjustable array with a fill pointer."
   (:documentation
    "This represents the most basic sort of iterator.  It can only go
 forward.  Unless otherwise specified, assume that iterators are not
-thread safe.")
-  (:metaclass closer-mop:funcallable-standard-class))
+thread safe."))
 
 (defgeneric iterate-function (iterator)
   (:documentation
@@ -258,13 +257,6 @@ iterator.
 
 This generic function is called when initializing an iterator.  It is
 not called every time the iterator advances."))
-
-(defmethod initialize-instance :after ((i iterator) &key)
-  (let ((fn (iterate-function i)))
-    (closer-mop:set-funcallable-instance-function
-     i
-     (lambda ()
-       (funcall fn i)))))
 
 (defmacro make-iterator ((&key type) &body body)
   "Create an iterator.
@@ -311,7 +303,7 @@ control transfer out of the body of `make-iterator'."
 
 (defun next (iter)
   "Advance an iterator"
-  (funcall iter))
+  (funcall (iterate-function iter)))
 
 (defmacro do-iterator ((value-sym iter &key result) &body body)
   "Iterate across the values produced by an iterator"
@@ -354,18 +346,12 @@ them in an array."
    "A `lookahead-iterator' permits peeking at values without consuming
 them.  Using the `peek-lookahead-iterator' function, you can see what
 the next value will be.  Using `fork-lookahead-iterator', you can peek
-arbitrarily far into the future of the sequence.")
-  (:metaclass closer-mop:funcallable-standard-class))
+arbitrarily far into the future of the sequence."))
 
 (defmethod initialize-instance :after ((iter lookahead-iterator) &key)
   (with-slots (compute buffer) iter
     (unless (consp compute)
-      (setf compute (cons t compute)))
-    (let ((fn (iterate-function iter)))
-      (closer-mop:set-funcallable-instance-function
-       iter
-       (lambda ()
-         (funcall fn iter))))))
+      (setf compute (cons t compute)))))
 
 (defun fork-lookahead-iterator (iter)
   "Create a `lookahead-iterator' that shares the same future as the
