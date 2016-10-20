@@ -1,5 +1,5 @@
 (defpackage :shcl.utility
-  (:use :common-lisp :alexandria)
+  (:use :common-lisp)
   (:shadow #:when-let #:when-let*)
   (:export
    #:define-once-global #:required #:required-argument-missing #:optimization-settings
