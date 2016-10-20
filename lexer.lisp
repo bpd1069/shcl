@@ -19,9 +19,7 @@
   ())
 
 (defclass assignment-word (a-word)
-  ((name
-    :initarg :name)
-   (value-word
+  ((value-word
     :type a-word ;; Can't remove this
     :initarg :value-word
     )))
