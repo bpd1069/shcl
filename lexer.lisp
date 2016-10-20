@@ -10,7 +10,7 @@
        `(error "make-load-form called"))))
 
 (defclass token ()
-  ((value :initarg :value)))
+  ((value))) ;; Can't remove this slot
 
 (defclass a-word (token)
   ())

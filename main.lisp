@@ -12,6 +12,6 @@
 
 (defun main ()
   (to-string "echo")
-  (make-instance 'shcl.lexer::assignment-word :name (make-instance 'shcl.lexer::name :text "FOO" :value "FOO")
-                 :value-word (make-instance 'shcl.lexer::simple-word :text "123" :value "123")
-                 :value "FOO=123"))
+  (make-instance 'shcl.lexer::assignment-word :name (make-instance 'shcl.lexer::name :text "FOO")
+                 :value-word (make-instance 'shcl.lexer::simple-word :text "123")
+                 ))
