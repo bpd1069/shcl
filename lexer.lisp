@@ -17,6 +17,6 @@
     :initarg :value-word
     )))
 
-(defmethod make-load-form ((object assignment-word) &optional environment)
+(defmethod make-load-form ((object assignment-word) &optional environment) ;; Can't remove this method
   (declare (ignore environment))
   (error "make-load-form called"))
