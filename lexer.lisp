@@ -26,7 +26,7 @@
   ((text
     :initarg :text
     :accessor simple-word-text
-    :initform (required)
+    :initform (error "required")
     :type string)))
 (defmethod print-object ((simple-word simple-word) stream)
   (format stream "#<~A ~S>" (class-name (class-of simple-word)) (simple-word-text simple-word)))
@@ -35,13 +35,13 @@
 (defclass assignment-word (a-word)
   ((name
     :type name
-    :initform (required)
+    :initform (error "required")
     :accessor assignment-word-name
     :initarg :name)
    (value-word
     :type a-word
     :initarg :value-word
-    :initform (required)
+    :initform (error "required")
     :accessor assignment-word-value-word)))
 (defmethod print-object ((word assignment-word) stream)
   (format stream "#<~A ~S = ~S>" (class-name (class-of word)) (assignment-word-name word) (assignment-word-value-word word)))

@@ -12,12 +12,3 @@ Put this at the top of every file!"
   ;; For some reason, calling this function before dumping is
   ;; important.
   )
-
-(define-condition required-argument-missing (error)
-  ()
-  (:documentation
-   "A condition for indicating that a required argument was not provided."))
-
-(defmacro required ()
-  "This form always signals an error of type `required-argument-missing'."
-  `(error 'required-argument-missing))
