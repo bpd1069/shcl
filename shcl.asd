@@ -15,4 +15,5 @@
   :version "0.0.1"
   :author "Brad Jensen <brad@bradjensen.net>"
   :licence "Modified BSD License"
-  :depends-on ("shcl/shell/main"))
+  :depends-on ("shcl/shell/main")
+  :in-order-to ((test-op (test-op "shcl-test"))))

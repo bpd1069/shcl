@@ -1,8 +1,7 @@
 (declaim (optimize (speed 0) (safety 3) (space 0) (debug 3) (compilation-speed 0)))
 
 (let ((here (truename ".")))
-  (push here asdf:*central-registry*)
-  (push (merge-pathnames #P"test/" here) asdf:*central-registry*))
+  (push here asdf:*central-registry*))
 
 (handler-bind
     ((error
